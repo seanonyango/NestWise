@@ -12,19 +12,65 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.nestwise.ui.theme.NestWiseTheme
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.nestwise.ui.navigation.NavRoutes
+import com.example.nestwise.ui.screens.LoginScreen
+import com.example.nestwise.ui.screens.WelcomeScreen
+import com.example.nestwise.ui.screens.DashboardScreen
+
+
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            NestWiseApp()
 
         }
 
     }
 }
 
+@Composable
+fun NestWiseApp() {
+    // Navigation controller keeps track of current screen
+    val navController = rememberNavController()
+
+    // Host manages all navigation destinations
+    NavHost(
+        navController = navController,
+        startDestination = NavRoutes.Welcome.route
+    ) {
+        composable(NavRoutes.Welcome.route) {
+            WelcomeScreen(
+                onLoginClick = { navController.navigate(NavRoutes.Login.route) },
+                onSignUpClick = { /* Add sign up later */ }
+            )
+        }
+
+        composable(NavRoutes.Login.route) {
+            LoginScreen(
+                onBackClick = { navController.popBackStack() },
+                onLoginClick = {
+                    navController.navigate(NavRoutes.Dashboard.route) {
+                        popUpTo(NavRoutes.Welcome.route) { inclusive = true }
+                    }
+                },
+                onForgotPasswordClick = {},
+                onSignUpClick = {}
+            )
+        }
+
+        composable(NavRoutes.Dashboard.route) {
+            DashboardScreen()
+        }
+    }
+}
 
 
-@Preview(showBackground = true)
+//@Preview(showBackground = true)
 
