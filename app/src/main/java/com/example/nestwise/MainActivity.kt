@@ -1,9 +1,11 @@
 package com.example.nestwise
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -16,18 +18,20 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.nestwise.ui.navigation.NavRoutes
+import com.example.nestwise.ui.screens.AddTransactionScreen
 import com.example.nestwise.ui.screens.LoginScreen
 import com.example.nestwise.ui.screens.WelcomeScreen
 import com.example.nestwise.ui.screens.DashboardScreen
-
-
+import com.example.nestwise.ui.screens.TransactionListScreen
 
 
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+
             NestWiseApp()
 
         }
@@ -35,6 +39,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NestWiseApp() {
     // Navigation controller keeps track of current screen
@@ -66,8 +71,22 @@ fun NestWiseApp() {
         }
 
         composable(NavRoutes.Dashboard.route) {
-            DashboardScreen()
+            DashboardScreen(navController = navController)
         }
+
+        composable(NavRoutes.Transactions.route) {
+            TransactionListScreen(navController = navController)
+        }
+
+
+        composable("add_transaction") {
+            AddTransactionScreen(
+                onSaveSuccess = {
+                    navController.popBackStack() // return to list after save
+                }
+            )
+        }
+
     }
 }
 

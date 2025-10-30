@@ -15,10 +15,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.Icons
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.example.nestwise.ui.components.BottomNavBar
 
 
 @Composable
-fun DashboardScreen() {
+fun DashboardScreen(navController: NavController) {
 
     // --- App Colors ---
     val primaryBlue = Color(0xFF1565C0)
@@ -38,29 +41,8 @@ fun DashboardScreen() {
     Scaffold(
         containerColor = backgroundWhite,
         // --- Bottom navigation bar ---
-        bottomBar = {
-            NavigationBar(containerColor = primaryBlue) {
-                navItems.forEachIndexed { index, label ->
-                    NavigationBarItem(
-                        selected = index == 0, // Home selected by default
-                        onClick = { /* TODO: Navigate to target later */ },
-                        icon = {
-                            when (label) {
-                                "Home" -> Icon(Icons.Default.Home, contentDescription = label, tint = Color.White)
-                                "Transactions" -> Icon(Icons.Default.List, contentDescription = label, tint = Color.White)
-                                "Budgets" -> Icon(Icons.Default.Work, contentDescription = label, tint = Color.White)
-                                "Goals" -> Icon(Icons.Default.TrackChanges, contentDescription = label, tint = Color.White)
-
-                            }
-                        },
-                        label = {
-                            Text(label, color = Color.White, fontSize = 12.sp)
-                        },
-                        alwaysShowLabel = true
-                    )
-                }
-            }
-        }
+        bottomBar = {BottomNavBar(navController)
+        },
     ) { innerPadding ->
 
         // --- Main Dashboard Content ---
@@ -204,5 +186,6 @@ fun DashboardCard(title: String, value: String, color: Color) {
 @Preview(showBackground = true)
 @Composable
 fun DashboardScreenPreview() {
-    DashboardScreen()
+    val navController = rememberNavController()
+    DashboardScreen(navController = navController)
 }
