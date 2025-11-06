@@ -7,4 +7,7 @@ sealed class NavRoutes(val route: String) {
     object Transactions : NavRoutes("transactions")
     object Budgets : NavRoutes("budgets")
     object Goals : NavRoutes("goals")
+
+    object EditTransaction : NavRoutes("edit_transaction/{id}")
+
 }

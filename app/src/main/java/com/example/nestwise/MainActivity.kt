@@ -13,15 +13,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavType
 import com.example.nestwise.ui.theme.NestWiseTheme
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.nestwise.ui.navigation.NavRoutes
 import com.example.nestwise.ui.screens.AddTransactionScreen
 import com.example.nestwise.ui.screens.LoginScreen
 import com.example.nestwise.ui.screens.WelcomeScreen
 import com.example.nestwise.ui.screens.DashboardScreen
+import com.example.nestwise.ui.screens.EditTransactionScreen
 import com.example.nestwise.ui.screens.TransactionListScreen
 
 
@@ -86,6 +89,18 @@ fun NestWiseApp() {
                 }
             )
         }
+
+        composable(
+            route = "edit_transaction/{id}",
+            arguments = listOf(navArgument("id") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getString("id") ?: return@composable
+            EditTransactionScreen(
+                navController = navController,
+                transactionId = id
+            )
+        }
+
 
     }
 }
