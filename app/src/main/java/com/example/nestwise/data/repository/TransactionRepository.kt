@@ -1,15 +1,23 @@
 package com.example.nestwise.data.repository
 
-import TransactionDao
+
+import com.example.nestwise.data.dao.TransactionDao
 import com.example.nestwise.data.entities.TransactionEntity
 import kotlinx.coroutines.flow.Flow
 
-class TransactionRepository(private val dao: TransactionDao) {
+class TransactionRepository(
+    private val dao: TransactionDao
+) : TransactionRepositoryInterface {
 
-    val transactions: Flow<List<TransactionEntity>> = dao.getAllTransactions()
+    override val transactions = dao.getAllTransactions()
 
-    suspend fun add(t: TransactionEntity) = dao.insertTransaction(t)
-    suspend fun update(t: TransactionEntity) = dao.updateTransaction(t)
-    suspend fun delete(t: TransactionEntity) = dao.deleteTransaction(t)
-    suspend fun deleteMultiple(ids: List<String>) = dao.deleteMultiple(ids)
+    override suspend fun add(t: TransactionEntity) = dao.insertTransaction(t)
+
+    override suspend fun update(t: TransactionEntity) = dao.updateTransaction(t)
+
+    override suspend fun delete(id: String) = dao.deleteById(id)
+
+    override suspend fun deleteMultiple(ids: List<String>) = dao.deleteMultiple(ids)
 }
+
+

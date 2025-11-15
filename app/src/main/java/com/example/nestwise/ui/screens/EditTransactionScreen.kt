@@ -1,6 +1,5 @@
 package com.example.nestwise.ui.screens
 
-import android.annotation.SuppressLint
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
@@ -23,25 +22,33 @@ import java.time.LocalDate
 fun EditTransactionScreen(
     navController: NavController,
     transactionId: String,
-    viewModel: TransactionViewModel = viewModel()
-) {
-    // Find the transaction by ID
-    val transaction = viewModel.transactions.find { it.id == transactionId }
+    viewModel: TransactionViewModel
 
-    // Local state copies for editable fields
-    var title by remember { mutableStateOf(transaction?.title ?: "") }
-    var amount by remember { mutableStateOf(transaction?.amount?.toString() ?: "") }
-    var category by remember { mutableStateOf(transaction?.category ?: "") }
-    var type by remember { mutableStateOf(transaction?.type ?: TransactionType.EXPENSE) }
-    var date by remember { mutableStateOf(transaction?.date ?: LocalDate.now()) }
+) {
+    // Collect StateFlow from ViewModel
+    val transactions by viewModel.transactions.collectAsState()
+
+    // Find the correct transaction to edit
+    val transaction = transactions.find { it.id == transactionId }
+
+    // Handle case: transaction not found (e.g., wrong ID)
+    if (transaction == null) {
+        Text("Transaction not found.")
+        return
+    }
+
+    // Editable state fields
+    var title by remember { mutableStateOf(transaction.title) }
+    var amount by remember { mutableStateOf(transaction.amount.toString()) }
+    var category by remember { mutableStateOf(transaction.category) }
+    var type by remember { mutableStateOf(transaction.type) }
+    var date by remember { mutableStateOf(transaction.date) }
 
     val isValid = title.isNotBlank() && amount.toDoubleOrNull() != null && category.isNotBlank()
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("Edit Transaction") }
-            )
+            CenterAlignedTopAppBar(title = { Text("Edit Transaction") })
         }
     ) { innerPadding ->
         Column(
@@ -52,30 +59,55 @@ fun EditTransactionScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            OutlinedTextField(value = title, onValueChange = { title = it }, label = { Text("Title") })
-            OutlinedTextField(value = amount, onValueChange = { amount = it }, label = { Text("Amount") })
-            OutlinedTextField(value = category, onValueChange = { category = it }, label = { Text("Category") })
 
+            // Title
+            OutlinedTextField(
+                value = title,
+                onValueChange = { title = it },
+                label = { Text("Title") }
+            )
+
+            // Amount
+            OutlinedTextField(
+                value = amount,
+                onValueChange = { amount = it },
+                label = { Text("Amount") }
+            )
+
+            // Category
+            OutlinedTextField(
+                value = category,
+                onValueChange = { category = it },
+                label = { Text("Category") }
+            )
+
+            // Type (Income / Expense)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                RadioButton(selected = type == TransactionType.INCOME, onClick = { type = TransactionType.INCOME })
+                RadioButton(
+                    selected = type == TransactionType.INCOME,
+                    onClick = { type = TransactionType.INCOME }
+                )
                 Text("Income")
-                RadioButton(selected = type == TransactionType.EXPENSE, onClick = { type = TransactionType.EXPENSE })
+
+                RadioButton(
+                    selected = type == TransactionType.EXPENSE,
+                    onClick = { type = TransactionType.EXPENSE }
+                )
                 Text("Expense")
             }
 
+            // Save button
             Button(
                 onClick = {
-                    val updated = transaction?.copy(
+                    val updated = transaction.copy(
                         title = title,
                         amount = amount.toDouble(),
                         category = category,
                         date = date,
                         type = type
                     )
-                    if (updated != null) {
-                        viewModel.updateTransaction(updated)
-                    }
-                    navController.popBackStack() // Return to list
+                    viewModel.updateTransaction(updated)
+                    navController.popBackStack()
                 },
                 enabled = isValid
             ) {
@@ -83,31 +115,5 @@ fun EditTransactionScreen(
             }
         }
     }
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-@SuppressLint("ViewModelConstructorInComposable")
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun EditTransactionScreenPreview() {
-    val fakeViewModel = TransactionViewModel()
-
-    // Create a sample transaction
-    val sample = Transaction(
-        title = "Groceries",
-        amount = 55.0,
-        category = "Food & Dining",
-        date = LocalDate.now(),
-        type = TransactionType.EXPENSE
-    )
-    fakeViewModel.addTransaction(sample)
-
-    val fakeNavController = androidx.navigation.compose.rememberNavController()
-
-    EditTransactionScreen(
-        navController = fakeNavController,
-        transactionId = sample.id,
-        viewModel = fakeViewModel
-    )
 }
 

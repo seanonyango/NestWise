@@ -18,10 +18,14 @@ import androidx.compose.material.icons.Icons
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.nestwise.ui.components.BottomNavBar
+import com.example.nestwise.viewmodel.TransactionViewModel
 
 
 @Composable
-fun DashboardScreen(navController: NavController) {
+fun DashboardScreen(
+    navController: NavController,
+    viewModel: TransactionViewModel
+) {
 
     // --- App Colors ---
     val primaryBlue = Color(0xFF1565C0)
@@ -183,9 +187,9 @@ fun DashboardCard(title: String, value: String, color: Color) {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun DashboardScreenPreview() {
-    val navController = rememberNavController()
-    DashboardScreen(navController = navController)
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun DashboardScreenPreview() {
+//    val navController = rememberNavController()
+//    DashboardScreen(navController = navController)
+//}

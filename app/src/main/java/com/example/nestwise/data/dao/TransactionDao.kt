@@ -1,3 +1,5 @@
+package com.example.nestwise.data.dao
+
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -19,9 +21,10 @@ interface TransactionDao {
     @Update
     suspend fun updateTransaction(transaction: TransactionEntity)
 
-    @Delete
-    suspend fun deleteTransaction(transaction: TransactionEntity)
+    @Query("DELETE FROM transactions WHERE id = :id")
+    suspend fun deleteById(id: String)
 
     @Query("DELETE FROM transactions WHERE id IN (:ids)")
     suspend fun deleteMultiple(ids: List<String>)
+
 }

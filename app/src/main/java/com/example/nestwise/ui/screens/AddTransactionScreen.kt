@@ -19,7 +19,8 @@ import java.time.LocalDate
 @Composable
 fun AddTransactionScreen(
     onSaveSuccess: () -> Unit,
-    viewModel: TransactionViewModel = viewModel()
+    viewModel: TransactionViewModel
+
 ) {
     var title by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
@@ -70,18 +71,18 @@ fun AddTransactionScreen(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
-@SuppressLint("ViewModelConstructorInComposable")
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun AddTransactionScreenPreview() {
-    // Create a mock TransactionViewModel for preview
-    val fakeViewModel = TransactionViewModel()
-
-    // Call the AddTransactionScreen with dummy onSaveSuccess
-    AddTransactionScreen(
-        onSaveSuccess = {},
-        viewModel = fakeViewModel
-    )
-}
+//@RequiresApi(Build.VERSION_CODES.O)
+//@SuppressLint("ViewModelConstructorInComposable")
+//@Preview(showBackground = true, showSystemUi = true)
+//@Composable
+//fun AddTransactionScreenPreview() {
+//    // Create a mock TransactionViewModel for preview
+//    val fakeViewModel = TransactionViewModel()
+//
+//    // Call the AddTransactionScreen with dummy onSaveSuccess
+//    AddTransactionScreen(
+//        onSaveSuccess = {},
+//        viewModel = fakeViewModel
+//    )
+//}
 

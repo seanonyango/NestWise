@@ -9,5 +9,6 @@ sealed class NavRoutes(val route: String) {
     object Goals : NavRoutes("goals")
 
     object EditTransaction : NavRoutes("edit_transaction/{id}")
+    object ImportCsv : NavRoutes("import_csv")
 
 }
