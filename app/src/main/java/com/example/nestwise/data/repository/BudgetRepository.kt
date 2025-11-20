@@ -1,31 +1,30 @@
 package com.example.nestwise.data.repository
 
-
 import com.example.nestwise.data.dao.BudgetDao
 import com.example.nestwise.data.entities.BudgetEntity
 import kotlinx.coroutines.flow.Flow
 
-class BudgetRepository(private val dao: BudgetDao) {
+class BudgetRepository(private val budgetDao: BudgetDao) {
 
-    val budgets: Flow<List<BudgetEntity>> = dao.getAllBudgets()
+    val budgets: Flow<List<BudgetEntity>> = budgetDao.getAllBudgets()
 
     suspend fun addBudget(budget: BudgetEntity) {
-        dao.insertBudget(budget)
+        budgetDao.insertBudget(budget)
     }
 
     suspend fun updateBudget(budget: BudgetEntity) {
-        dao.updateBudget(budget)
+        budgetDao.updateBudget(budget)
     }
 
     suspend fun deleteBudget(budget: BudgetEntity) {
-        dao.deleteBudget(budget)
+        budgetDao.deleteBudget(budget)
     }
 
     suspend fun deleteById(id: String) {
-        dao.deleteById(id)
+        budgetDao.deleteById(id)
     }
 
-    suspend fun getBudget(id: String): BudgetEntity? {
-        return dao.getBudgetById(id)
+    suspend fun getBudgetById(id: String): BudgetEntity? {
+        return budgetDao.getBudgetById(id)
     }
 }

@@ -1,5 +1,6 @@
 package com.example.nestwise
 
+import android.R.style.Theme
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -22,116 +24,155 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.nestwise.data.database.AppDatabase
+import com.example.nestwise.data.repository.BudgetRepository
 import com.example.nestwise.data.repository.TransactionRepository
+import com.example.nestwise.ui.factories.BudgetViewModelFactory
 import com.example.nestwise.ui.factories.TransactionViewModelFactory
 import com.example.nestwise.ui.navigation.NavRoutes
+import com.example.nestwise.ui.screens.AddBudgetScreen
 import com.example.nestwise.ui.screens.AddTransactionScreen
+import com.example.nestwise.ui.screens.BudgetListScreen
 import com.example.nestwise.ui.screens.LoginScreen
 import com.example.nestwise.ui.screens.WelcomeScreen
 import com.example.nestwise.ui.screens.DashboardScreen
+import com.example.nestwise.ui.screens.EditBudgetScreen
 import com.example.nestwise.ui.screens.EditTransactionScreen
 import com.example.nestwise.ui.screens.ImportCsvScreen
 import com.example.nestwise.ui.screens.TransactionListScreen
+import com.example.nestwise.viewmodel.BudgetViewModel
 import com.example.nestwise.viewmodel.TransactionViewModel
+
+import androidx.compose.runtime.staticCompositionLocalOf
+import com.example.nestwise.di.AppContainer
+
+val LocalAppContainer = staticCompositionLocalOf<AppContainer> {
+    error("AppContainer not found!")
+}
 
 
 class MainActivity : ComponentActivity() {
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Create the DI container ONCE for the whole app
+        val appContainer = AppContainer(applicationContext)
+
         setContent {
 
-            // ------------------------------------------------
-            // ⬇️ THIS IS A COMPOSABLE CONTEXT
-            // ------------------------------------------------
-
-            val navController = rememberNavController()
-
-            // Provide ViewModel dependencies INSIDE the composable
-            val context = LocalContext.current
-            val db = AppDatabase.getInstance(context)
-            val repo = TransactionRepository(db.transactionDao())
-
-            val transactionViewModel: TransactionViewModel = viewModel(
-                factory = TransactionViewModelFactory(repo)
-            )
-
-            // ------------------------------------------------
-            // NOW BUILD NAVHOST WITH THE VIEWMODEL
-            // ------------------------------------------------
-            NavHost(
-                navController = navController,
-                startDestination = NavRoutes.Welcome.route
+            // Provide DI container to the whole app tree
+            CompositionLocalProvider(
+                LocalAppContainer provides appContainer
             ) {
+                NestWiseTheme {
 
-                composable(NavRoutes.Welcome.route) {
-                    WelcomeScreen(
-                        onLoginClick = { navController.navigate(NavRoutes.Login.route) },
-                        onSignUpClick = {}
+                    val navController = rememberNavController()
+
+                    // --- Retrieve repositories FROM DI ---
+                    val transactionRepo = appContainer.transactionRepository
+                    val budgetRepo = appContainer.budgetRepository
+
+                    // --- Create ViewModels FROM DI repositories ---
+                    val transactionViewModel: TransactionViewModel = viewModel(
+                        factory = TransactionViewModelFactory(transactionRepo)
                     )
-                }
 
-                composable(NavRoutes.Login.route) {
-                    LoginScreen(
-                        onBackClick = { navController.popBackStack() },
-                        onLoginClick = {
-                            navController.navigate(NavRoutes.Dashboard.route) {
-                                popUpTo(NavRoutes.Welcome.route) { inclusive = true }
-                            }
-                        },
-                        onForgotPasswordClick = {},
-                        onSignUpClick = {}
+                    val budgetViewModel: BudgetViewModel = viewModel(
+                        factory = BudgetViewModelFactory(budgetRepo)
                     )
-                }
 
-                composable(NavRoutes.Dashboard.route) {
-                    DashboardScreen(
+                    // ------------------- NAV HOST ---------------------
+
+                    NavHost(
                         navController = navController,
-                        viewModel = transactionViewModel
-                    )
-                }
+                        startDestination = NavRoutes.Welcome.route
+                    ) {
 
-                composable(NavRoutes.Transactions.route) {
-                    TransactionListScreen(
-                        navController = navController,
-                        viewModel = transactionViewModel
-                    )
-                }
-
-                composable("add_transaction") {
-                    AddTransactionScreen(
-                        viewModel = transactionViewModel,
-                        onSaveSuccess = {
-                            navController.popBackStack()
+                        // ---------- Welcome ----------
+                        composable(NavRoutes.Welcome.route) {
+                            WelcomeScreen(
+                                onLoginClick = { navController.navigate(NavRoutes.Login.route) },
+                                onSignUpClick = {}
+                            )
                         }
-                    )
-                }
 
-                composable(
-                    route = "edit_transaction/{id}",
-                    arguments = listOf(navArgument("id") { type = NavType.StringType })
-                ) { entry ->
-                    val id = entry.arguments?.getString("id")!!
-                    EditTransactionScreen(
-                        navController = navController,
-                        transactionId = id,
-                        viewModel = transactionViewModel
-                    )
-                }
+                        // ---------- Login ----------
+                        composable(NavRoutes.Login.route) {
+                            LoginScreen(
+                                onBackClick = { navController.popBackStack() },
+                                onLoginClick = {
+                                    navController.navigate(NavRoutes.Dashboard.route) {
+                                        popUpTo(NavRoutes.Welcome.route) { inclusive = true }
+                                    }
+                                },
+                                onForgotPasswordClick = {},
+                                onSignUpClick = {}
+                            )
+                        }
 
-                composable(NavRoutes.ImportCsv.route) {
-                    ImportCsvScreen(
-                        navController = navController,
-                        viewModel = transactionViewModel
-                    )
+                        // ---------- Dashboard ----------
+                        composable(NavRoutes.Dashboard.route) {
+                            DashboardScreen(
+                                navController = navController,
+                                viewModel = transactionViewModel
+                            )
+                        }
+
+                        // ---------- Transactions ----------
+                        composable(NavRoutes.Transactions.route) {
+                            TransactionListScreen(
+                                navController = navController,
+                                viewModel = transactionViewModel
+                            )
+                        }
+
+                        composable("add_transaction") {
+                            AddTransactionScreen(
+                                viewModel = transactionViewModel,
+                                onSaveSuccess = {
+                                    navController.popBackStack()
+                                }
+                            )
+                        }
+
+                        composable(
+                            route = "edit_transaction/{id}",
+                            arguments = listOf(navArgument("id") { type = NavType.StringType })
+                        ) { entry ->
+                            val id = entry.arguments?.getString("id")!!
+                            EditTransactionScreen(
+                                navController = navController,
+                                transactionId = id,
+                                viewModel = transactionViewModel
+                            )
+                        }
+
+                        // ---------- CSV Import ----------
+                        composable(NavRoutes.ImportCsv.route) {
+                            ImportCsvScreen(
+                                navController = navController,
+                                viewModel = transactionViewModel
+                            )
+                        }
+
+                        // ---------- Budgets ----------
+                        composable("budgets") {
+                            BudgetListScreen(navController, budgetViewModel)
+                        }
+
+                        composable("add_budget") {
+                            AddBudgetScreen(navController, budgetViewModel)
+                        }
+
+                        composable("edit_budget/{id}") { backStack ->
+                            val id = backStack.arguments?.getString("id")!!
+                            EditBudgetScreen(navController, id, budgetViewModel)
+                        }
+                    }
                 }
             }
         }
     }
 }
-
-
-
-//@Preview(showBackground = true)
 

@@ -28,11 +28,15 @@ fun BottomNavBar(navController: NavController) {
                 onClick = {
                     if (currentRoute != item.route) {
                         navController.navigate(item.route) {
-                            popUpTo(NavRoutes.Dashboard.route)
-                            launchSingleTop = true
+                            popUpTo(NavRoutes.Dashboard.route) {
+                                saveState = true        //  keeps screen state in memory
+                            }
+                            launchSingleTop = true      // prevents reloading same screen
+                            restoreState = true         // restores previous state when returning
                         }
                     }
                 },
+
                 icon = {
                     when (item.route) {
                         NavRoutes.Dashboard.route -> Icon(Icons.Default.Home, contentDescription = "Home", tint = Color.White)
