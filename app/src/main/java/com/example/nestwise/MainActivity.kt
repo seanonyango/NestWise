@@ -129,9 +129,11 @@ class MainActivity : ComponentActivity() {
                         composable(NavRoutes.Dashboard.route) {
                             DashboardScreen(
                                 navController = navController,
-                                viewModel = transactionViewModel
+                                transactionVM = transactionViewModel,
+                                goalVM = goalViewModel
                             )
                         }
+
 
                         // ---------- Transactions ----------
                         composable(NavRoutes.Transactions.route) {

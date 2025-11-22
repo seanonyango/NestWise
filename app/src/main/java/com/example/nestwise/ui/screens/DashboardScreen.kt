@@ -1,55 +1,79 @@
 package com.example.nestwise.ui.screens
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.material.icons.Icons
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import com.example.nestwise.data.TransactionType
 import com.example.nestwise.ui.components.BottomNavBar
+import com.example.nestwise.viewmodel.GoalViewModel
 import com.example.nestwise.viewmodel.TransactionViewModel
+import java.time.LocalDate
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DashboardScreen(
     navController: NavController,
-    viewModel: TransactionViewModel
+    transactionVM: TransactionViewModel,
+    goalVM: GoalViewModel
 ) {
-
-    // --- App Colors ---
     val primaryBlue = Color(0xFF1565C0)
-    val accentOrange = Color(0xFFFFA726) // Complementary accent for visuals
+    val accentOrange = Color(0xFFFFA726)
     val backgroundWhite = Color.White
 
-    // --- Dummy Data (temporary placeholders for UI design) ---
-    val monthlyIncome = "$5,000"
-    val monthlySpending = "$2,300"
-    val savingsProgress = 0.45f // 45%
-    val topCategory = "Food & Dining"
-    val topCategorySpending = "$650"
+    // ---- REAL DATA ----
+    val transactions by transactionVM.transactions.collectAsState()
+    val goals by goalVM.goals.collectAsState()
 
-    // --- Bottom Navigation Items ---
-    val navItems = listOf("Home", "Transactions", "Budgets", "Goals")
+    // ---- MONTHLY INCOME ----
+    val monthlyIncomeAmount = transactions
+        .filter { it.type == TransactionType.INCOME && it.date.isThisMonth() }
+        .sumOf { it.amount }
+
+    val monthlyIncome = "₹${"%,.2f".format(monthlyIncomeAmount)}"
+
+    // ---- MONTHLY SPENDING ----
+    val monthlySpendingAmount = transactions
+        .filter { it.type == TransactionType.EXPENSE && it.date.isThisMonth() }
+        .sumOf { it.amount }
+
+    val monthlySpending = "₹${"%,.2f".format(monthlySpendingAmount)}"
+
+    // ---- TOP CATEGORY ----
+    val topCategoryEntry = transactions
+        .filter { it.type == TransactionType.EXPENSE }
+        .groupBy { it.category }
+        .maxByOrNull { (_, items) -> items.sumOf { it.amount } }
+
+    val topCategory = topCategoryEntry?.key ?: "None"
+    val topCategorySpending =
+        "₹${"%,.2f".format(topCategoryEntry?.value?.sumOf { it.amount } ?: 0.0)}"
+
+    // ---- GOAL PROGRESS ----
+    val totalSaved = goals.sumOf { it.currentAmount }
+    val totalTarget = goals.sumOf { it.targetAmount }
+
+    val savingsProgress =
+        if (totalTarget > 0) (totalSaved / totalTarget).coerceIn(0.0, 1.0).toFloat()
+        else 0f
 
     Scaffold(
         containerColor = backgroundWhite,
-        // --- Bottom navigation bar ---
-        bottomBar = {BottomNavBar(navController)
-        },
+        bottomBar = { BottomNavBar(navController) },
     ) { innerPadding ->
 
-        // --- Main Dashboard Content ---
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -58,7 +82,7 @@ fun DashboardScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            // --- Header Section ---
+            // Header
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -67,103 +91,85 @@ fun DashboardScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "🪺 NestWise",
+                    "🪺 NestWise",
                     color = primaryBlue,
                     fontSize = 26.sp,
                     fontWeight = FontWeight.Bold
                 )
 
-                IconButton(onClick = { /* Notifications or profile later */ }) {
-                    Icon(Icons.Default.Person, contentDescription = "Notifications", tint = primaryBlue)
-                }
+                Icon(
+                    Icons.Default.Person,
+                    contentDescription = "Profile",
+                    tint = primaryBlue
+                )
             }
 
-            // --- Monthly Income Card ---
-            DashboardCard(
-                title = "Monthly Income",
-                value = monthlyIncome,
-                color = primaryBlue
-            )
+            // Income card
+            DashboardCard("Monthly Income", monthlyIncome, primaryBlue)
+            Spacer(Modifier.height(12.dp))
 
-            Spacer(modifier = Modifier.height(12.dp))
+            // Spending card
+            DashboardCard("Monthly Spending", monthlySpending, accentOrange)
+            Spacer(Modifier.height(12.dp))
 
-            // --- Monthly Spending Card ---
-            DashboardCard(
-                title = "Monthly Spending",
-                value = monthlySpending,
-                color = accentOrange
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // --- Savings Progress Card ---
+            // Savings goal progress
             Card(
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD)),
                 shape = RoundedCornerShape(12.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp)
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Column(
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth()
-                ) {
-                    Text("Savings Progress", color = primaryBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    LinearProgressIndicator(
-                    progress = { savingsProgress },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(10.dp),
-                    color = primaryBlue,
-                    trackColor = Color(0xFFBBDEFB),
-                    strokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
+                Column(Modifier.padding(16.dp)) {
                     Text(
-                        text = "${(savingsProgress * 100).toInt()}% of goal achieved",
+                        "Savings Progress",
+                        color = primaryBlue,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    LinearProgressIndicator(
+                        progress = savingsProgress,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(10.dp),
+                        color = primaryBlue,
+                        trackColor = Color(0xFFBBDEFB)
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "${(savingsProgress * 100).toInt()}% of goals achieved",
                         fontSize = 14.sp,
                         color = Color.Gray
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(Modifier.height(12.dp))
 
-            // --- Top Spending Category Card ---
+            // Top Category Card
             Card(
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFFBE9E7)),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth()
-                ) {
-                    Text("Top Spending Category", color = accentOrange, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                    Spacer(modifier = Modifier.height(6.dp))
+                Column(Modifier.padding(16.dp)) {
                     Text(
-                        text = "$topCategory - $topCategorySpending",
+                        "Top Spending Category",
+                        color = accentOrange,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        "$topCategory - $topCategorySpending",
                         color = Color.Gray,
                         fontSize = 14.sp
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // --- Footer Text ---
-            Text(
-                text = "Dummy data for demonstration. to be reviewed later",
-                color = Color.Gray,
-                fontSize = 12.sp,
-                textAlign = TextAlign.Center
-            )
         }
     }
 }
+
 
 // --- Reusable Dashboard Card Component ---
 @Composable
@@ -187,9 +193,9 @@ fun DashboardCard(title: String, value: String, color: Color) {
     }
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun DashboardScreenPreview() {
-//    val navController = rememberNavController()
-//    DashboardScreen(navController = navController)
-//}
+@RequiresApi(Build.VERSION_CODES.O)
+fun LocalDate.isThisMonth(): Boolean {
+    val now = LocalDate.now()
+    return this.year == now.year && this.month == now.month
+}
+
