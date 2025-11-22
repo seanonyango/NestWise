@@ -3,6 +3,7 @@ package com.example.nestwise.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nestwise.data.entities.BudgetEntity
+import com.example.nestwise.data.entities.TransactionEntity
 import com.example.nestwise.data.repository.BudgetRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
@@ -45,4 +46,18 @@ class BudgetViewModel(
             repo.deleteById(id)
         }
     }
+
+    fun linkTransactionToBudget(budgetId: String, transaction: TransactionEntity) =
+        viewModelScope.launch {
+            repo.linkTransaction(budgetId, transaction)
+        }
+
+    fun unlinkTransactionFromBudget(budgetId: String, transaction: TransactionEntity) =
+        viewModelScope.launch {
+            repo.unlinkTransaction(budgetId, transaction)
+        }
+
+    suspend fun getLinkedBudget(transactionId: String) =
+        repo.getLinkedBudget(transactionId)
+
 }

@@ -8,6 +8,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.nestwise.data.dao.GoalDao
 import com.example.nestwise.data.entities.BudgetEntity
+import com.example.nestwise.data.entities.BudgetTransactionCrossRef
 import com.example.nestwise.data.entities.GoalEntity
 import com.example.nestwise.data.entities.TransactionEntity
 
@@ -15,9 +16,11 @@ import com.example.nestwise.data.entities.TransactionEntity
     entities = [
         TransactionEntity::class,
         BudgetEntity::class,
+        BudgetTransactionCrossRef::class,
         GoalEntity::class
-    ],
-    version = 3,
+    ]
+    ,
+    version = 6,
     exportSchema = false
 )
 

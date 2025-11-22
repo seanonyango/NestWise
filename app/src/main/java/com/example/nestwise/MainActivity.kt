@@ -139,9 +139,11 @@ class MainActivity : ComponentActivity() {
                         composable(NavRoutes.Transactions.route) {
                             TransactionListScreen(
                                 navController = navController,
-                                viewModel = transactionViewModel
+                                transactionViewModel = transactionViewModel,
+                                budgetViewModel = budgetViewModel
                             )
                         }
+
 
                         composable("add_transaction") {
                             AddTransactionScreen(

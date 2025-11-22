@@ -1,5 +1,6 @@
 package com.example.nestwise.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -11,41 +12,49 @@ import com.example.nestwise.data.entities.BudgetEntity
 @Composable
 fun BudgetCard(
     budget: BudgetEntity,
-    spent: Double,
     onClick: () -> Unit
 ) {
-    val progress = (spent / budget.limitAmount).coerceIn(0.0, 1.0)
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp)
-            .padding(horizontal = 12.dp),
-        onClick = onClick
+            .clickable { onClick() }
+            .padding(vertical = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(Modifier.padding(16.dp)) {
+
             Text(
                 budget.category,
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                style = MaterialTheme.typography.titleMedium
             )
 
             Spacer(Modifier.height(4.dp))
 
-            Text("Limit: \$${budget.limitAmount}")
-            Text("Spent: \$${"%.2f".format(spent)}")
-
-            Spacer(Modifier.height(8.dp))
-
-            LinearProgressIndicator(
-                progress = progress.toFloat(),
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.primary
+            Text(
+                "Limit: $${budget.limitAmount}",
+                style = MaterialTheme.typography.bodyMedium
             )
 
-            if (!budget.notes.isNullOrBlank()) {
-                Spacer(Modifier.height(8.dp))
-                Text(budget.notes ?: "", style = MaterialTheme.typography.bodySmall)
-            }
+            Text(
+                "Spent: $${budget.spentAmount}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error
+            )
+
+            Spacer(Modifier.height(6.dp))
+
+            LinearProgressIndicator(
+                progress = {
+                    (budget.spentAmount / budget.limitAmount)
+                        .coerceIn(0.0, 1.0)
+                        .toFloat()
+                },
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+            )
         }
     }
 }

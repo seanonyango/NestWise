@@ -59,7 +59,6 @@ fun BudgetListScreen(
                         // TEMP: spent = 0 until later integration with actual transactions
                         BudgetCard(
                             budget = budget,
-                            spent = 0.0,
                             onClick = {
                                 navController.navigate("edit_budget/${budget.id}")
                             }

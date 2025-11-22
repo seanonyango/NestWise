@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,9 +21,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.nestwise.data.Transaction
 import com.example.nestwise.data.TransactionType
+import com.example.nestwise.data.mappers.toEntity
 import com.example.nestwise.ui.components.BottomNavBar
+import com.example.nestwise.viewmodel.BudgetViewModel
 import com.example.nestwise.viewmodel.TransactionViewModel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -30,44 +34,28 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun TransactionListScreen(
     navController: NavController,
-    viewModel: TransactionViewModel
-){
-    // FIX 1: Collect StateFlow from ViewModel
-    val transactions by viewModel.transactions.collectAsState()
+    transactionViewModel: TransactionViewModel,
+    budgetViewModel: BudgetViewModel
+) {
+    val transactions by transactionViewModel.transactions.collectAsState()
+    val budgets by budgetViewModel.budgets.collectAsState()
 
     val dateFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy")
-
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    // Multi-select tracking
-    val selected = remember { mutableStateListOf<String>() }
-    val isSelecting = selected.isNotEmpty()
+    // Dialog state
+    var showBudgetDialog by remember { mutableStateOf(false) }
+    var selectedTransactionForBudget by remember { mutableStateOf<Transaction?>(null) }
 
     Scaffold(
         bottomBar = { BottomNavBar(navController) },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
-            if (isSelecting) {
-                ExtendedFloatingActionButton(
-                    text = { Text("Delete Selected") },
-                    icon = { Icon(Icons.Default.Delete, contentDescription = null) },
-                    onClick = {
-                        viewModel.deleteMultiple(selected)
-                        selected.clear()
-                        scope.launch {
-                            snackbarHostState.showSnackbar("Selected transactions deleted")
-                        }
-                    }
-                )
-            } else {
-                FloatingActionButton(
-                    onClick = { navController.navigate("add_transaction") }
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = "Add Transaction")
-                }
+            FloatingActionButton(onClick = { navController.navigate("add_transaction") }) {
+                Icon(Icons.Default.Add, contentDescription = "Add Transaction")
             }
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        }
     ) { padding ->
 
         Column(
@@ -84,81 +72,119 @@ fun TransactionListScreen(
             } else {
                 LazyColumn {
                     items(transactions) { t ->
-                        val isSelected = t.id in selected
-
                         TransactionSelectableCard(
                             transaction = t,
-                            isSelected = isSelected,
-                            onSelect = {
-                                if (isSelected) selected.remove(t.id)
-                                else selected.add(t.id)
-                            },
+                            dateFormatter = dateFormatter,
                             onEditClick = {
                                 navController.navigate("edit_transaction/${t.id}")
                             },
                             onDeleteClick = {
-                                viewModel.deleteTransaction(t.id)
+                                transactionViewModel.deleteTransaction(t.id)
                                 scope.launch {
                                     snackbarHostState.showSnackbar("Transaction deleted")
                                 }
                             },
-                            dateFormatter = dateFormatter
+                            onAddToBudgetClick = {
+                                selectedTransactionForBudget = t
+                                showBudgetDialog = true
+                            },
+                            onRemoveFromBudgetClick = { budgetId ->
+                                budgetViewModel.unlinkTransactionFromBudget(
+                                    budgetId = budgetId,
+                                    transaction = t.toEntity()
+                                )
+                                scope.launch { snackbarHostState.showSnackbar("Removed from budget") }
+                            },
+                            isLinkedToBudget = runBlocking {
+                                budgetViewModel.getLinkedBudget(t.id) != null
+                            }
                         )
-
                         Spacer(Modifier.height(8.dp))
                     }
                 }
             }
         }
     }
+
+    // -------------------------------
+    // Budget Selection Dialog
+    // -------------------------------
+    if (showBudgetDialog && selectedTransactionForBudget != null) {
+        val matchingBudgets = budgets.filter {
+            it.category.equals(selectedTransactionForBudget!!.category, ignoreCase = true)
+        }
+
+        AlertDialog(
+            onDismissRequest = { showBudgetDialog = false },
+            title = { Text("Assign to Budget") },
+            text = {
+                if (matchingBudgets.isEmpty()) {
+                    Text("No budgets exist for this category.")
+                } else {
+                    Column {
+                        matchingBudgets.forEach { budget ->
+                            TextButton(onClick = {
+                                budgetViewModel.linkTransactionToBudget(
+                                    budgetId = budget.id,
+                                    transaction = selectedTransactionForBudget!!.toEntity()
+                                )
+                                showBudgetDialog = false
+                            }) {
+                                Text(budget.category)
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {}
+        )
+    }
 }
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TransactionSelectableCard(
     transaction: Transaction,
-    isSelected: Boolean,
-    onSelect: () -> Unit,
+    dateFormatter: DateTimeFormatter,
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit,
-    dateFormatter: DateTimeFormatter
+    onAddToBudgetClick: () -> Unit,
+    onRemoveFromBudgetClick: (String) -> Unit,
+    isLinkedToBudget: Boolean
 ) {
-    val bgColor = if (isSelected)
-        MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-    else
-        MaterialTheme.colorScheme.surfaceVariant
+    var menuExpanded by remember { mutableStateOf(false) }
 
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(
-                enabled = true,
-                role = null,
-                onClick = { onSelect() }
-            ),
-        colors = CardDefaults.cardColors(containerColor = bgColor)
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Row(
             Modifier
                 .fillMaxWidth()
                 .padding(12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
+
+            // Left side
             Column {
                 Text(transaction.title, style = MaterialTheme.typography.titleMedium)
                 Text(transaction.category, style = MaterialTheme.typography.bodySmall)
                 Text(transaction.date.format(dateFormatter), style = MaterialTheme.typography.bodySmall)
             }
 
+            // Right side
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = if (transaction.type == TransactionType.INCOME)
-                        "+${transaction.amount}"
+                    if (transaction.type == TransactionType.INCOME) "+${transaction.amount}"
                     else "-${transaction.amount}",
                     color = if (transaction.type == TransactionType.INCOME)
                         MaterialTheme.colorScheme.primary
                     else MaterialTheme.colorScheme.error
                 )
+
+                // Icons row
                 Row {
                     IconButton(onClick = onEditClick) {
                         Icon(Icons.Default.Edit, contentDescription = "Edit")
@@ -166,22 +192,54 @@ fun TransactionSelectableCard(
                     IconButton(onClick = onDeleteClick) {
                         Icon(Icons.Default.Delete, contentDescription = "Delete")
                     }
+
+                    // ⋮ menu
+                    IconButton(onClick = { menuExpanded = true }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "More Options")
+                    }
+
+                    DropdownMenu(
+                        expanded = menuExpanded,
+                        onDismissRequest = { menuExpanded = false }
+                    ) {
+                        if (!isLinkedToBudget) {
+                            DropdownMenuItem(
+                                text = { Text("Add to Budget") },
+                                onClick = {
+                                    menuExpanded = false
+                                    onAddToBudgetClick()
+                                }
+                            )
+                        } else {
+                            DropdownMenuItem(
+                                text = { Text("Remove from Budget") },
+                                onClick = {
+                                    menuExpanded = false
+                                    // The ViewModel will know which budget to unlink
+                                    onRemoveFromBudgetClick(
+                                        transaction.id // we fetch actual budget in VM
+                                    )
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun TransactionListScreenPreview() {
-    val fakeViewModel = TransactionViewModel.preview()
-    val fakeNavController = androidx.navigation.compose.rememberNavController()
 
-    TransactionListScreen(
-        navController = fakeNavController,
-        viewModel = fakeViewModel
-    )
-}
+//@RequiresApi(Build.VERSION_CODES.O)
+//@Preview(showBackground = true, showSystemUi = true)
+//@Composable
+//fun TransactionListScreenPreview() {
+//    val fakeViewModel = TransactionViewModel.preview()
+//    val fakeNavController = androidx.navigation.compose.rememberNavController()
+//
+//    TransactionListScreen(
+//        navController = fakeNavController,
+//        viewModel = fakeViewModel
+//    )
+//}
 
