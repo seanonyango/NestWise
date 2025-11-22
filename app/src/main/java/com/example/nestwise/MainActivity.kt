@@ -1,5 +1,6 @@
 package com.example.nestwise
 
+import GoalViewModelFactory
 import android.R.style.Theme
 import android.os.Build
 import android.os.Bundle
@@ -44,6 +45,10 @@ import com.example.nestwise.viewmodel.TransactionViewModel
 
 import androidx.compose.runtime.staticCompositionLocalOf
 import com.example.nestwise.di.AppContainer
+import com.example.nestwise.ui.screens.AddGoalScreen
+import com.example.nestwise.ui.screens.EditGoalScreen
+import com.example.nestwise.ui.screens.GoalsListScreen
+import com.example.nestwise.viewmodel.GoalViewModel
 
 val LocalAppContainer = staticCompositionLocalOf<AppContainer> {
     error("AppContainer not found!")
@@ -81,6 +86,15 @@ class MainActivity : ComponentActivity() {
                     val budgetViewModel: BudgetViewModel = viewModel(
                         factory = BudgetViewModelFactory(budgetRepo)
                     )
+
+                    val goalViewModel: GoalViewModel = viewModel(
+                        factory = GoalViewModelFactory(appContainer.goalRepository)
+                    )
+
+
+
+
+
 
                     // ------------------- NAV HOST ---------------------
 
@@ -169,6 +183,20 @@ class MainActivity : ComponentActivity() {
                             val id = backStack.arguments?.getString("id")!!
                             EditBudgetScreen(navController, id, budgetViewModel)
                         }
+
+                        composable(NavRoutes.Goals.route) {
+                            GoalsListScreen(navController, goalViewModel)
+                        }
+
+                        composable("add_goal") {
+                            AddGoalScreen(navController, goalViewModel)
+                        }
+
+                        composable("edit_goal/{id}") { backStack ->
+                            val id = backStack.arguments?.getString("id")!!
+                            EditGoalScreen(navController, id, goalViewModel)
+                        }
+
                     }
                 }
             }

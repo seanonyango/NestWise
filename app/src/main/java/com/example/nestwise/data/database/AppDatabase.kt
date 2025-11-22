@@ -6,18 +6,27 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.example.nestwise.data.dao.GoalDao
 import com.example.nestwise.data.entities.BudgetEntity
+import com.example.nestwise.data.entities.GoalEntity
 import com.example.nestwise.data.entities.TransactionEntity
 
 @Database(
-    entities = [TransactionEntity::class, BudgetEntity::class],
-    version = 2,
+    entities = [
+        TransactionEntity::class,
+        BudgetEntity::class,
+        GoalEntity::class
+    ],
+    version = 3,
     exportSchema = false
 )
+
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun transactionDao(): TransactionDao
     abstract fun budgetDao(): BudgetDao
+    abstract fun goalDao(): GoalDao
+
 
     companion object {
         @Volatile

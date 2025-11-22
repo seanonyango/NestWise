@@ -4,6 +4,8 @@ import android.content.Context
 import com.example.nestwise.data.database.AppDatabase
 import com.example.nestwise.data.repository.TransactionRepository
 import com.example.nestwise.data.repository.BudgetRepository
+import com.example.nestwise.data.repository.GoalRepository
+
 // GoalRepository later
 
 class AppContainer(context: Context) {
@@ -18,6 +20,8 @@ class AppContainer(context: Context) {
     val budgetRepository: BudgetRepository =
         BudgetRepository(database.budgetDao())
 
-    // Later:
-    // val goalRepository: GoalRepository = GoalRepository(database.goalDao())
+
+    val goalRepository: GoalRepository =
+        GoalRepository(database.goalDao())
+
 }
