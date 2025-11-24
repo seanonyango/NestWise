@@ -44,13 +44,19 @@ import com.example.nestwise.viewmodel.BudgetViewModel
 import com.example.nestwise.viewmodel.TransactionViewModel
 
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.nestwise.di.AppContainer
+import com.example.nestwise.notifications.NotificationHelper
 import com.example.nestwise.ui.factories.AdviceViewModelFactory
 import com.example.nestwise.ui.screens.AddGoalScreen
 import com.example.nestwise.ui.screens.EditGoalScreen
 import com.example.nestwise.ui.screens.GoalsListScreen
 import com.example.nestwise.viewmodel.AdviceViewModel
 import com.example.nestwise.viewmodel.GoalViewModel
+import com.example.nestwise.work.DailyTipWorker
+import java.util.concurrent.TimeUnit
 
 val LocalAppContainer = staticCompositionLocalOf<AppContainer> {
     error("AppContainer not found!")
@@ -65,6 +71,14 @@ class MainActivity : ComponentActivity() {
 
         // Create the DI container ONCE for the whole app
         val appContainer = AppContainer(applicationContext)
+        NotificationHelper.createChannel(this)
+
+        setupDailyTipWorker()
+
+
+
+
+
 
         setContent {
 
@@ -213,6 +227,20 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    private fun setupDailyTipWorker() {
+        val request = PeriodicWorkRequestBuilder<DailyTipWorker>(
+            1, TimeUnit.DAYS
+        ).build()
+
+
+        WorkManager.getInstance(this)
+            .enqueueUniquePeriodicWork(
+                "daily_tip_work",
+                ExistingPeriodicWorkPolicy.UPDATE,
+                request
+            )
     }
 }
 
