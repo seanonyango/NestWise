@@ -17,6 +17,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.nestwise.data.TransactionType
 import com.example.nestwise.ui.components.BottomNavBar
+import com.example.nestwise.ui.components.NotificationPermissionCard
+import com.example.nestwise.viewmodel.AdviceViewModel
 import com.example.nestwise.viewmodel.GoalViewModel
 import com.example.nestwise.viewmodel.TransactionViewModel
 import java.time.LocalDate
@@ -27,7 +29,8 @@ import java.time.LocalDate
 fun DashboardScreen(
     navController: NavController,
     transactionVM: TransactionViewModel,
-    goalVM: GoalViewModel
+    goalVM: GoalViewModel,
+    adviceVM: AdviceViewModel
 ) {
     val primaryBlue = Color(0xFF1565C0)
     val accentOrange = Color(0xFFFFA726)
@@ -36,6 +39,9 @@ fun DashboardScreen(
     // ---- REAL DATA ----
     val transactions by transactionVM.transactions.collectAsState()
     val goals by goalVM.goals.collectAsState()
+    val latestTipState by adviceVM.latestTip.collectAsState()
+    val latestTipText = latestTipState?.advice ?: "Tap refresh to get today’s tip."
+
 
     // ---- MONTHLY INCOME ----
     val monthlyIncomeAmount = transactions
@@ -104,6 +110,10 @@ fun DashboardScreen(
                 )
             }
 
+            NotificationPermissionCard()
+            Spacer(Modifier.height(12.dp))
+
+
             // Income card
             DashboardCard("Monthly Income", monthlyIncome, primaryBlue)
             Spacer(Modifier.height(12.dp))
@@ -166,6 +176,41 @@ fun DashboardScreen(
                     )
                 }
             }
+
+            Spacer(Modifier.height(12.dp))
+
+            Card(
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9)),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth()
+                ) {
+                    Text(
+                        "Today’s Tip",
+                        color = Color(0xFF2E7D32),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        text = latestTipText,
+                        color = Color.DarkGray,
+                        fontSize = 14.sp
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    OutlinedButton(
+                        onClick = { adviceVM.refreshTip() },
+                        modifier = Modifier.align(Alignment.End)
+                    ) {
+                        Text("Refresh Tip")
+                    }
+                }
+            }
+
         }
     }
 }

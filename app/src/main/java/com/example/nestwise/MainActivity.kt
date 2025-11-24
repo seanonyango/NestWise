@@ -45,9 +45,11 @@ import com.example.nestwise.viewmodel.TransactionViewModel
 
 import androidx.compose.runtime.staticCompositionLocalOf
 import com.example.nestwise.di.AppContainer
+import com.example.nestwise.ui.factories.AdviceViewModelFactory
 import com.example.nestwise.ui.screens.AddGoalScreen
 import com.example.nestwise.ui.screens.EditGoalScreen
 import com.example.nestwise.ui.screens.GoalsListScreen
+import com.example.nestwise.viewmodel.AdviceViewModel
 import com.example.nestwise.viewmodel.GoalViewModel
 
 val LocalAppContainer = staticCompositionLocalOf<AppContainer> {
@@ -90,6 +92,10 @@ class MainActivity : ComponentActivity() {
                     val goalViewModel: GoalViewModel = viewModel(
                         factory = GoalViewModelFactory(appContainer.goalRepository)
                     )
+                    val adviceViewModel: AdviceViewModel = viewModel(
+                        factory = AdviceViewModelFactory(appContainer.adviceRepository)
+                    )
+
 
 
 
@@ -130,9 +136,11 @@ class MainActivity : ComponentActivity() {
                             DashboardScreen(
                                 navController = navController,
                                 transactionVM = transactionViewModel,
-                                goalVM = goalViewModel
+                                goalVM = goalViewModel,
+                                adviceVM = adviceViewModel
                             )
                         }
+
 
 
                         // ---------- Transactions ----------

@@ -6,9 +6,11 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.example.nestwise.data.dao.DailyTipDao
 import com.example.nestwise.data.dao.GoalDao
 import com.example.nestwise.data.entities.BudgetEntity
 import com.example.nestwise.data.entities.BudgetTransactionCrossRef
+import com.example.nestwise.data.entities.DailyTipEntity
 import com.example.nestwise.data.entities.GoalEntity
 import com.example.nestwise.data.entities.TransactionEntity
 
@@ -17,18 +19,21 @@ import com.example.nestwise.data.entities.TransactionEntity
         TransactionEntity::class,
         BudgetEntity::class,
         BudgetTransactionCrossRef::class,
-        GoalEntity::class
-    ]
-    ,
-    version = 6,
+        GoalEntity::class,
+        DailyTipEntity::class
+    ],
+    version = 7,
     exportSchema = false
 )
+
+
 
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun transactionDao(): TransactionDao
     abstract fun budgetDao(): BudgetDao
     abstract fun goalDao(): GoalDao
+    abstract fun dailyTipDao(): DailyTipDao
 
 
     companion object {
