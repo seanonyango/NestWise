@@ -1,13 +1,23 @@
 package com.example.nestwise.ui.screens
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,7 +46,7 @@ fun WelcomeScreen(
         ) {
 
             // --- Placeholder Logo ---
-            // Replace with Image(painterResource(id = R.drawable.your_logo), ...) later
+
             Box(
                 modifier = Modifier
                     .size(120.dp)
@@ -44,7 +54,7 @@ fun WelcomeScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "🪺", // Temporary emoji as logo placeholder
+                    text = "🪺", // App logo
                     fontSize = 60.sp
                 )
             }
@@ -61,7 +71,7 @@ fun WelcomeScreen(
 
             // --- Tagline Placeholder ---
             Text(
-                text = "Tagline will be placed here. Tbd",
+                text = "Your smart budgeting starts here",
                 fontSize = 16.sp,
                 color = Color.Gray,
                 textAlign = TextAlign.Center

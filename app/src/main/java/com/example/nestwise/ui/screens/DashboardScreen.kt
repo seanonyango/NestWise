@@ -77,17 +77,26 @@ fun DashboardScreen(
         .filter { it.type == TransactionType.EXPENSE && it.date.isThisMonth() }
         .sumOf { it.amount }
 
-    val monthlySpending = formatCurrency(monthlyIncomeAmount, currency)
+    val monthlySpending = formatCurrency(monthlySpendingAmount, currency)
 
     // ---- TOP CATEGORY ----
+    // Find the top spending category this month
     val topCategoryEntry = transactions
-        .filter { it.type == TransactionType.EXPENSE }
+        .filter { it.type == TransactionType.EXPENSE && it.date.isThisMonth() }
         .groupBy { it.category }
         .maxByOrNull { (_, items) -> items.sumOf { it.amount } }
 
+// Category name or fallback
     val topCategory = topCategoryEntry?.key ?: "None"
-    val topCategorySpending =
-        "₹${"%,.2f".format(topCategoryEntry?.value?.sumOf { it.amount } ?: 0.0)}"
+
+// Sum of spending in that category
+    val topCategoryAmount = topCategoryEntry
+        ?.value
+        ?.sumOf { it.amount }
+        ?: 0.0
+
+
+    val topCategorySpending = formatCurrency(topCategoryAmount, currency)
 
     // ---- GOAL PROGRESS ----
     val totalSaved = goals.sumOf { it.currentAmount }

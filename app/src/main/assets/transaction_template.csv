@@ -1,0 +1,4 @@
+title,amount,category,date,type
+Groceries,45.20,Food,2024-11-10,EXPENSE
+Rent,1200.00,Housing,2024-11-01,EXPENSE
+Paycheck,2500.00,Income,2024-11-05,INCOME

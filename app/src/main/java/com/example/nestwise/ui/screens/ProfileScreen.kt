@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.nestwise.ui.navigation.NavRoutes
 import com.example.nestwise.viewmodel.UserViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -114,15 +115,27 @@ fun ProfileScreen(
 
             Spacer(Modifier.height(24.dp))
 
+
             Button(
                 onClick = {
                     userViewModel.updateProfile(name, currency)
+
+                    // Navigate back to Dashboard
+                    navController.navigate(NavRoutes.Dashboard.route) {
+                        popUpTo(NavRoutes.Profile.route) { inclusive = true }
+                    }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = primaryBlue)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
             ) {
-                Text("Save Changes", color = Color.White)
+                Text(
+                    "Save Changes",
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
             }
+
 
             Spacer(Modifier.height(24.dp))
 

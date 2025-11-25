@@ -167,6 +167,7 @@ class MainActivity : ComponentActivity() {
                         composable("add_transaction") {
                             AddTransactionScreen(
                                 viewModel = transactionViewModel,
+                                navController = navController,
                                 onSaveSuccess = { navController.popBackStack() }
                             )
                         }
