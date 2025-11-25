@@ -1,60 +1,49 @@
 package com.example.nestwise
 
 import GoalViewModelFactory
-import android.R.style.Theme
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
-import com.example.nestwise.ui.theme.NestWiseTheme
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.nestwise.data.database.AppDatabase
-import com.example.nestwise.data.repository.BudgetRepository
-import com.example.nestwise.data.repository.TransactionRepository
-import com.example.nestwise.ui.factories.BudgetViewModelFactory
-import com.example.nestwise.ui.factories.TransactionViewModelFactory
-import com.example.nestwise.ui.navigation.NavRoutes
-import com.example.nestwise.ui.screens.AddBudgetScreen
-import com.example.nestwise.ui.screens.AddTransactionScreen
-import com.example.nestwise.ui.screens.BudgetListScreen
-import com.example.nestwise.ui.screens.LoginScreen
-import com.example.nestwise.ui.screens.WelcomeScreen
-import com.example.nestwise.ui.screens.DashboardScreen
-import com.example.nestwise.ui.screens.EditBudgetScreen
-import com.example.nestwise.ui.screens.EditTransactionScreen
-import com.example.nestwise.ui.screens.ImportCsvScreen
-import com.example.nestwise.ui.screens.TransactionListScreen
-import com.example.nestwise.viewmodel.BudgetViewModel
-import com.example.nestwise.viewmodel.TransactionViewModel
-
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.nestwise.di.AppContainer
 import com.example.nestwise.notifications.NotificationHelper
 import com.example.nestwise.ui.factories.AdviceViewModelFactory
+import com.example.nestwise.ui.factories.BudgetViewModelFactory
+import com.example.nestwise.ui.factories.TransactionViewModelFactory
+import com.example.nestwise.ui.navigation.NavRoutes
+import com.example.nestwise.ui.screens.AddBudgetScreen
 import com.example.nestwise.ui.screens.AddGoalScreen
+import com.example.nestwise.ui.screens.AddTransactionScreen
+import com.example.nestwise.ui.screens.BudgetListScreen
+import com.example.nestwise.ui.screens.DashboardScreen
+import com.example.nestwise.ui.screens.EditBudgetScreen
 import com.example.nestwise.ui.screens.EditGoalScreen
+import com.example.nestwise.ui.screens.EditTransactionScreen
 import com.example.nestwise.ui.screens.GoalsListScreen
+import com.example.nestwise.ui.screens.ImportCsvScreen
+import com.example.nestwise.ui.screens.LoginScreen
+import com.example.nestwise.ui.screens.ProfileScreen
+import com.example.nestwise.ui.screens.SignUpScreen
+import com.example.nestwise.ui.screens.TransactionListScreen
+import com.example.nestwise.ui.screens.WelcomeScreen
 import com.example.nestwise.viewmodel.AdviceViewModel
+import com.example.nestwise.viewmodel.BudgetViewModel
 import com.example.nestwise.viewmodel.GoalViewModel
+import com.example.nestwise.viewmodel.TransactionViewModel
+import com.example.nestwise.viewmodel.UserViewModel
+import com.example.nestwise.viewmodel.UserViewModelFactory
 import com.example.nestwise.work.DailyTipWorker
 import java.util.concurrent.TimeUnit
 
@@ -62,45 +51,32 @@ val LocalAppContainer = staticCompositionLocalOf<AppContainer> {
     error("AppContainer not found!")
 }
 
-
 class MainActivity : ComponentActivity() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Create the DI container ONCE for the whole app
         val appContainer = AppContainer(applicationContext)
         NotificationHelper.createChannel(this)
 
         setupDailyTipWorker()
 
-
-
-
-
-
         setContent {
 
-            // Provide DI container to the whole app tree
             CompositionLocalProvider(
                 LocalAppContainer provides appContainer
             ) {
-                NestWiseTheme {
+//                NestWiseTheme {
 
                     val navController = rememberNavController()
 
-                    // --- Retrieve repositories FROM DI ---
-                    val transactionRepo = appContainer.transactionRepository
-                    val budgetRepo = appContainer.budgetRepository
-
-                    // --- Create ViewModels FROM DI repositories ---
                     val transactionViewModel: TransactionViewModel = viewModel(
-                        factory = TransactionViewModelFactory(transactionRepo)
+                        factory = TransactionViewModelFactory(appContainer.transactionRepository)
                     )
 
                     val budgetViewModel: BudgetViewModel = viewModel(
-                        factory = BudgetViewModelFactory(budgetRepo)
+                        factory = BudgetViewModelFactory(appContainer.budgetRepository)
                     )
 
                     val goalViewModel: GoalViewModel = viewModel(
@@ -110,30 +86,26 @@ class MainActivity : ComponentActivity() {
                         factory = AdviceViewModelFactory(appContainer.adviceRepository)
                     )
 
-
-
-
-
-
-
-                    // ------------------- NAV HOST ---------------------
+                    val userViewModel: UserViewModel = viewModel(
+                        factory = UserViewModelFactory(appContainer.userRepository)
+                    )
 
                     NavHost(
                         navController = navController,
                         startDestination = NavRoutes.Welcome.route
                     ) {
 
-                        // ---------- Welcome ----------
                         composable(NavRoutes.Welcome.route) {
                             WelcomeScreen(
                                 onLoginClick = { navController.navigate(NavRoutes.Login.route) },
-                                onSignUpClick = {}
+                                onSignUpClick = { navController.navigate(NavRoutes.SignUp.route) }
                             )
                         }
 
-                        // ---------- Login ----------
                         composable(NavRoutes.Login.route) {
                             LoginScreen(
+                                navController = navController,
+                                userViewModel = userViewModel,
                                 onBackClick = { navController.popBackStack() },
                                 onLoginClick = {
                                     navController.navigate(NavRoutes.Dashboard.route) {
@@ -141,23 +113,49 @@ class MainActivity : ComponentActivity() {
                                     }
                                 },
                                 onForgotPasswordClick = {},
-                                onSignUpClick = {}
+                                onSignUpClick = {
+                                    navController.navigate(NavRoutes.SignUp.route)
+                                }
                             )
                         }
 
-                        // ---------- Dashboard ----------
+                        composable(NavRoutes.SignUp.route) {
+                            SignUpScreen(
+                                onBackToLogin = { navController.popBackStack() },
+                                onSignUpSuccess = {
+                                    navController.navigate(NavRoutes.Login.route) {
+                                        popUpTo(NavRoutes.Welcome.route) { inclusive = false }
+                                    }
+                                },
+                                userViewModel = userViewModel
+                            )
+                        }
+
+
+
+
                         composable(NavRoutes.Dashboard.route) {
                             DashboardScreen(
                                 navController = navController,
                                 transactionVM = transactionViewModel,
                                 goalVM = goalViewModel,
-                                adviceVM = adviceViewModel
+                                adviceVM = adviceViewModel,
+                                userViewModel = userViewModel
                             )
                         }
 
+                        composable(NavRoutes.Profile.route) {
+                            ProfileScreen(
+                                navController = navController,
+                                userViewModel = userViewModel,
+                                onLogout = {
+                                    navController.navigate(NavRoutes.Welcome.route) {
+                                        popUpTo(NavRoutes.Dashboard.route) { inclusive = true }
+                                    }
+                                }
+                            )
+                        }
 
-
-                        // ---------- Transactions ----------
                         composable(NavRoutes.Transactions.route) {
                             TransactionListScreen(
                                 navController = navController,
@@ -166,13 +164,10 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-
                         composable("add_transaction") {
                             AddTransactionScreen(
                                 viewModel = transactionViewModel,
-                                onSaveSuccess = {
-                                    navController.popBackStack()
-                                }
+                                onSaveSuccess = { navController.popBackStack() }
                             )
                         }
 
@@ -188,7 +183,6 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // ---------- CSV Import ----------
                         composable(NavRoutes.ImportCsv.route) {
                             ImportCsvScreen(
                                 navController = navController,
@@ -196,7 +190,6 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // ---------- Budgets ----------
                         composable("budgets") {
                             BudgetListScreen(navController, budgetViewModel)
                         }
@@ -222,18 +215,17 @@ class MainActivity : ComponentActivity() {
                             val id = backStack.arguments?.getString("id")!!
                             EditGoalScreen(navController, id, goalViewModel)
                         }
-
-                    }
+//                    }
                 }
             }
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.GINGERBREAD)
     private fun setupDailyTipWorker() {
         val request = PeriodicWorkRequestBuilder<DailyTipWorker>(
             1, TimeUnit.DAYS
         ).build()
-
 
         WorkManager.getInstance(this)
             .enqueueUniquePeriodicWork(
@@ -243,4 +235,3 @@ class MainActivity : ComponentActivity() {
             )
     }
 }
-

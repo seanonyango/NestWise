@@ -2,12 +2,12 @@ package com.example.nestwise.di
 
 import android.content.Context
 import com.example.nestwise.data.database.AppDatabase
-import com.example.nestwise.data.repository.TransactionRepository
+import com.example.nestwise.data.remote.ZenQuotesApi
+import com.example.nestwise.data.repository.AdviceRepository
 import com.example.nestwise.data.repository.BudgetRepository
 import com.example.nestwise.data.repository.GoalRepository
-import com.example.nestwise.data.repository.AdviceRepository
-import com.example.nestwise.data.remote.AdviceApi
-import com.example.nestwise.data.remote.ZenQuotesApi
+import com.example.nestwise.data.repository.TransactionRepository
+import com.example.nestwise.data.repository.UserRepository
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -49,4 +49,10 @@ class AppContainer(context: Context) {
     //  Advice / Tip repository
     val adviceRepository: AdviceRepository =
         AdviceRepository(zenQuotesApi, database.dailyTipDao())
+
+    val userRepository = UserRepository(
+        database.userDao(),
+        context
+    )
+
 }

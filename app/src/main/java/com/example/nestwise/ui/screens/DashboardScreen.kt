@@ -2,12 +2,28 @@ package com.example.nestwise.ui.screens
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -18,9 +34,11 @@ import androidx.navigation.NavController
 import com.example.nestwise.data.TransactionType
 import com.example.nestwise.ui.components.BottomNavBar
 import com.example.nestwise.ui.components.NotificationPermissionCard
+import com.example.nestwise.utils.formatCurrency
 import com.example.nestwise.viewmodel.AdviceViewModel
 import com.example.nestwise.viewmodel.GoalViewModel
 import com.example.nestwise.viewmodel.TransactionViewModel
+import com.example.nestwise.viewmodel.UserViewModel
 import java.time.LocalDate
 
 
@@ -30,7 +48,8 @@ fun DashboardScreen(
     navController: NavController,
     transactionVM: TransactionViewModel,
     goalVM: GoalViewModel,
-    adviceVM: AdviceViewModel
+    adviceVM: AdviceViewModel,
+    userViewModel: UserViewModel
 ) {
     val primaryBlue = Color(0xFF1565C0)
     val accentOrange = Color(0xFFFFA726)
@@ -41,6 +60,9 @@ fun DashboardScreen(
     val goals by goalVM.goals.collectAsState()
     val latestTipState by adviceVM.latestTip.collectAsState()
     val latestTipText = latestTipState?.advice ?: "Tap refresh to get today’s tip."
+    val user by userViewModel.currentUser.collectAsState()
+    val currency = user?.currency ?: "AUD"
+    val displayName = user?.name ?: "There"
 
 
     // ---- MONTHLY INCOME ----
@@ -48,14 +70,14 @@ fun DashboardScreen(
         .filter { it.type == TransactionType.INCOME && it.date.isThisMonth() }
         .sumOf { it.amount }
 
-    val monthlyIncome = "₹${"%,.2f".format(monthlyIncomeAmount)}"
+    val monthlyIncome = formatCurrency(monthlyIncomeAmount, currency)
 
     // ---- MONTHLY SPENDING ----
     val monthlySpendingAmount = transactions
         .filter { it.type == TransactionType.EXPENSE && it.date.isThisMonth() }
         .sumOf { it.amount }
 
-    val monthlySpending = "₹${"%,.2f".format(monthlySpendingAmount)}"
+    val monthlySpending = formatCurrency(monthlyIncomeAmount, currency)
 
     // ---- TOP CATEGORY ----
     val topCategoryEntry = transactions
@@ -96,18 +118,31 @@ fun DashboardScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+
                 Text(
                     "🪺 NestWise",
                     color = primaryBlue,
                     fontSize = 26.sp,
                     fontWeight = FontWeight.Bold
                 )
-
-                Icon(
-                    Icons.Default.Person,
-                    contentDescription = "Profile",
-                    tint = primaryBlue
+                Text(
+                    text = "Hey, $displayName 👋",
+                    color = primaryBlue,
+                    fontSize = 26.sp,
+                    fontWeight = FontWeight.Bold
                 )
+
+
+                IconButton(
+                    onClick = { navController.navigate("profile") }
+                ) {
+                    Icon(
+                        Icons.Default.Person,
+                        contentDescription = "Profile",
+                        tint = primaryBlue
+                    )
+                }
+
             }
 
             NotificationPermissionCard()

@@ -10,5 +10,8 @@ sealed class NavRoutes(val route: String) {
 
     object EditTransaction : NavRoutes("edit_transaction/{id}")
     object ImportCsv : NavRoutes("import_csv")
+    object SignUp : NavRoutes("signup")
+    object Profile : NavRoutes("profile")
+
 
 }

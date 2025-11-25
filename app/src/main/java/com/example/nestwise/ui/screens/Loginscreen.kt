@@ -1,75 +1,73 @@
 package com.example.nestwise.ui.screens
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.example.nestwise.viewmodel.UserViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    onBackClick: () -> Unit = {},
-    onLoginClick: () -> Unit = {},
-    onForgotPasswordClick: () -> Unit = {},
-    onSignUpClick: () -> Unit = {}
+    userViewModel: UserViewModel,
+    navController: NavController,
+    onSignUpClick: () -> Unit,
+    onBackClick: () -> Unit,
+    onLoginClick: () -> Unit,
+    onForgotPasswordClick: () -> Unit
 ) {
-    // Brand colors
     val primaryBlue = Color(0xFF1565C0)
-    val backgroundWhite = Color.White
 
-    // User input state
-    var username by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+
+    val authError by userViewModel.authError.collectAsState()
+
+
+
+
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = backgroundWhite
+        color = Color.White
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(24.dp),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.Start
+            verticalArrangement = Arrangement.Center
         ) {
 
-            // --- Top Row: Logo + Back Button ---
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp, bottom = 32.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Logo Placeholder
-                Text(
-                    text = "🪺",
-                    fontSize = 36.sp,
-                )
-
-                // Back option
-                TextButton(onClick = onBackClick) {
-                    Text(
-                        text = "Back",
-                        color = primaryBlue,
-                        fontSize = 16.sp
-                    )
-                }
-            }
-
-            // --- Title ---
             Text(
                 text = "Welcome Back",
                 color = primaryBlue,
@@ -77,96 +75,64 @@ fun LoginScreen(
                 fontWeight = FontWeight.Bold
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(Modifier.height(20.dp))
 
-            Text(
-                text = "Login to continue",
-                color = Color.Gray,
-                fontSize = 16.sp
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // --- Username Field ---
             OutlinedTextField(
-                value = username,
-                onValueChange = { username = it },
-                label = { Text("Username") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                value = email,
+                onValueChange = { email = it },
+                label = { Text("Email") },
+                modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(Modifier.height(16.dp))
 
-            // --- Password Field ---
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("Password") },
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // --- Forgot Password ---
-            TextButton(onClick = onForgotPasswordClick) {
-                Text(
-                    text = "Forgot password?",
-                    color = primaryBlue,
-                    fontSize = 14.sp,
-                    textAlign = TextAlign.End
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // --- Login Button ---
-            Button(
-                onClick = onLoginClick,
-                colors = ButtonDefaults.buttonColors(containerColor = primaryBlue),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-            ) {
-                Text("Login", color = Color.White, fontSize = 16.sp)
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // --- Sign Up for new users ---
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                val annotatedText = buildAnnotatedString {
-                    append("Don’t have an account? ")
-                    withStyle(
-                        style = SpanStyle(
-                            color = primaryBlue,
-                            fontWeight = FontWeight.Bold
-                        )
-                    ) {
-                        append("Sign Up")
+                singleLine = true,
+                visualTransformation = if (passwordVisible) VisualTransformation.None
+                else PasswordVisualTransformation(),
+                trailingIcon = {
+                    val icon = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(icon, contentDescription = null)
                     }
                 }
+            )
 
-                TextButton(onClick = onSignUpClick) {
-                    Text(
-                        text = annotatedText,
-                        fontSize = 14.sp,
-                        textAlign = TextAlign.Center
-                    )
-                }
+            if (authError != null) {
+                Spacer(Modifier.height(12.dp))
+                Text(authError!!, color = Color.Red)
+            }
+
+            Spacer(Modifier.height(20.dp))
+
+            Button(
+                onClick = {
+                    userViewModel.login(email, password) {
+                        // on success
+                        navController.navigate("dashboard") {
+                            popUpTo("welcome") { inclusive = true }
+                        }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(primaryBlue)
+            ) {
+                Text("Login", color = Color.White)
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            TextButton(onClick = onSignUpClick) {
+                Text("Don’t have an account? Sign Up", color = primaryBlue)
+            }
+
+            TextButton(onClick = onBackClick) {
+                Text("← Back", color = Color.Gray)
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun LoginScreenPreview() {
-    LoginScreen()
 }
