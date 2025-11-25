@@ -118,11 +118,15 @@ title, amount, category, date (yyyy-mm-dd), type (INCOME/EXPENSE)
 ---
 
 ## 📸 **Screenshots**
-/screenshots/dashboard.png
-/screenshots/transactions.png
-/screenshots/goals.png
-/screenshots/budgets.png
-/screenshots/profile.png
+![](screenshots/Budgets.jpeg)
+![](screenshots/Transactions.jpeg)
+![](screenshots/Profile.jpeg)
+![](screenshots/Savings.jpeg)
+![](screenshots/Dashboard.jpeg)
+---
+
+
+
 
 ## 🧪 **Testing**
 - CSV Parser Unit Tests  
