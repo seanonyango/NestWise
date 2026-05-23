@@ -5,7 +5,7 @@ NestWise helps users manage their daily financial lives through budgeting, track
 
 ---
 
-## 🚀 Features
+## Features
 
 ### User Accounts**
 - Email + password login  
