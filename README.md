@@ -1,5 +1,5 @@
 # 🪺 NestWise — Personal Finance Tracker 
-**A modern, intuitive Android finance app built with Jetpack Compose, Room, Retrofit, and WorkManager.**
+**A modern Android finance app built with Jetpack Compose, Room, Retrofit, and WorkManager.**
 
 NestWise helps users manage their daily financial lives through budgeting, tracking expenses, setting savings goals, importing CSV data, receiving daily financial tips, and more — all wrapped in a clean, responsive UI and backed by a structured MVVM + DI architecture.
 
@@ -7,7 +7,7 @@ NestWise helps users manage their daily financial lives through budgeting, track
 
 ## 🚀 Features
 
-### **🔐 User Accounts**
+### User Accounts**
 - Email + password login  
 - User registration with name & preferred currency 
 - In-app session handling with SharedPreferences  
@@ -16,7 +16,7 @@ NestWise helps users manage their daily financial lives through budgeting, track
 
 ---
 
-## 📊 **Dashboard Overview**
+##  **Dashboard Overview**
 A personalized dashboard greeting the user:
 
 ### Displays real financial insights:
@@ -28,15 +28,15 @@ A personalized dashboard greeting the user:
 
 ---
 
-## 💸 **Transactions**
+##  **Transactions**
 - Add, edit, and delete transactions   
 - Budget-sync actions (choose budget to assign spending to)   
 - CSV import using a downloadable template  
-- Clean material card UI with icons and action menus  
+- Material card UI with icons and action menus  
 
 ---
 
-## 🎯 **Budgets**
+##  **Budgets**
 - Create, edit, delete budgets  
 - Track **spent vs. limit** with progress bars  
 - Manual or semi-automatic spent adjustment  
@@ -44,7 +44,7 @@ A personalized dashboard greeting the user:
 
 ---
 
-## 🥅 **Savings Goals**
+##  **Savings Goals**
 - Create, edit, delete goals  
 - Track progress with visual indicators  
 - Deadlines supported  
@@ -52,7 +52,7 @@ A personalized dashboard greeting the user:
 
 ---
 
-## 📁 **CSV Import**
+##  **CSV Import**
 Users can:
 - Download a pre-formatted CSV template  
 - Fill multiple transactions in Excel / Sheets  
@@ -64,7 +64,7 @@ title, amount, category, date (yyyy-mm-dd), type (INCOME/EXPENSE)
 
 ---
 
-## 🌐 **Financial Tip API Integration**
+##  **Financial Tip API Integration**
 - API: **ZenQuotes /today** endpoint  
 - Fetched:
   - On demand
@@ -75,7 +75,7 @@ title, amount, category, date (yyyy-mm-dd), type (INCOME/EXPENSE)
 
 ---
 
-## 🔔 **WorkManager + Notifications**
+## **WorkManager + Notifications**
 - Background worker runs every 24 hours  
 - Fetches daily financial tip  
 - Stores in database  
@@ -84,7 +84,7 @@ title, amount, category, date (yyyy-mm-dd), type (INCOME/EXPENSE)
 
 ---
 
-## 🧱 **Architecture**
+##  **Architecture**
 ### Follows MVVM + Repository + Manual DI (AppContainer)
 - **Room** for local persistence  
 - **Retrofit** for networking  
@@ -104,7 +104,7 @@ title, amount, category, date (yyyy-mm-dd), type (INCOME/EXPENSE)
 
 
 
-## 🗂️ **Tech Stack**
+## **Tech Stack**
 - **Kotlin**
 - **Jetpack Compose (Material 3)**
 - **Room Database**
@@ -115,7 +115,7 @@ title, amount, category, date (yyyy-mm-dd), type (INCOME/EXPENSE)
 - **SharedPreferences**
 - **Material Design**
 - **CSV Parsing**
----
+
 
 ## 📸 **Screenshots**
 ![](screenshots/Budgets.jpeg)
@@ -128,12 +128,7 @@ title, amount, category, date (yyyy-mm-dd), type (INCOME/EXPENSE)
 
 
 
-## 🧪 **Testing**
-- CSV Parser Unit Tests  
-- DAO Tests using in-memory Room  
-- Navigation UI test (Welcome → Login)
-
-  ## 📝 Potential Improvements
+  ##  Potential Improvements
 - Cloud backup  
 - Multi-account switching  
 - ML-based budgeting suggestions  
@@ -143,7 +138,6 @@ title, amount, category, date (yyyy-mm-dd), type (INCOME/EXPENSE)
 
 ## 👤 Author
 **[Sean Onyango]**  
-Sean Onyango, Mobile Computing Project (CP3406)  
 
-## 🤖 AI Assistance Disclosure
-Some parts of this project (e.g., code scaffolding, documentation drafting, and troubleshooting) were created with the assistance of AI tools (OpenAI / ChatGPT). All AI-generated content was reviewed, modified, and integrated manually to ensure correctness and alignment with project requirements.
+
+
